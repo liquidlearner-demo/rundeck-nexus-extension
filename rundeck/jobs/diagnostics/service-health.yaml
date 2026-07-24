@@ -1,0 +1,49 @@
+- name: service-health
+  group: diagnostics
+  description: >-
+    Check whether a service's process is running and responding on the local
+    node. Useful when an alert or hypothesis suggests a service is down,
+    crash-looping, or unresponsive. Returns process status, listening ports,
+    and a DIAGNOSTIC SUMMARY of healthy/unhealthy.
+  tags: 'diagnostic'
+  loglevel: INFO
+  options:
+    - name: service
+      description: Service or process name to check, e.g. payments-api
+      required: true
+    - name: port
+      description: TCP port the service should be listening on (optional)
+      required: false
+  sequence:
+    keepgoing: false
+    strategy: node-first
+    commands:
+      - script: |
+          #!/bin/bash
+          service="@option.service@"
+          port="@option.port@"
+          echo "Checking process for: $service"
+          pids=$(pgrep -f "$service" || true)
+          if [ -n "$pids" ]; then
+            echo "Running PIDs: $pids"
+            ps -o pid,etime,pcpu,pmem,args -p $pids 2>/dev/null || true
+            status="healthy"
+            detail="process running (pids: $pids)"
+          else
+            status="unhealthy"
+            detail="no process matching '$service' found"
+          fi
+          if [ -n "$port" ]; then
+            if (command -v ss >/dev/null && ss -ltn | grep -q ":$port ") || \
+               (command -v netstat >/dev/null && netstat -ltn 2>/dev/null | grep -q ":$port "); then
+              echo "Port $port: LISTENING"
+              detail="$detail; port $port listening"
+            else
+              echo "Port $port: NOT LISTENING"
+              status="unhealthy"
+              detail="$detail; port $port not listening"
+            fi
+          fi
+          echo "=== DIAGNOSTIC SUMMARY ==="
+          echo "result: $status"
+          echo "detail: $detail"

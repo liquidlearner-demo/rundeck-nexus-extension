@@ -1,0 +1,42 @@
+- name: recent-logs
+  group: diagnostics
+  description: >-
+    Tail recent lines from a log file on the local node and count
+    error-level entries. Useful for seeing what a service was doing in the
+    minutes around an alert when the log isn't shipped to a telemetry
+    platform. Returns the tail plus a DIAGNOSTIC SUMMARY with error counts.
+  tags: 'diagnostic'
+  loglevel: INFO
+  options:
+    - name: log_path
+      description: Absolute path to the log file, e.g. /home/rundeck/var/logs/service.log
+      required: true
+    - name: lines
+      description: Number of lines to tail
+      value: '100'
+      required: false
+  sequence:
+    keepgoing: false
+    strategy: node-first
+    commands:
+      - script: |
+          #!/bin/bash
+          log_path="@option.log_path@"
+          lines="@option.lines@"
+          if [ ! -r "$log_path" ]; then
+            echo "=== DIAGNOSTIC SUMMARY ==="
+            echo "result: error"
+            echo "detail: log file '$log_path' not found or not readable"
+            exit 1
+          fi
+          echo "Last $lines lines of $log_path:"
+          tail -n "$lines" "$log_path"
+          errors=$(tail -n "$lines" "$log_path" | grep -ciE "error|fatal|panic" || true)
+          echo "=== DIAGNOSTIC SUMMARY ==="
+          if [ "$errors" -gt 0 ]; then
+            echo "result: unhealthy"
+            echo "detail: $errors error/fatal/panic lines in last $lines lines of $log_path"
+          else
+            echo "result: healthy"
+            echo "detail: no error-level lines in last $lines lines of $log_path"
+          fi

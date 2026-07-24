@@ -1,0 +1,21 @@
+# Runs the diagnostics gateway alongside an existing local Rundeck
+# (see /Users/chris/Rundeck/docker-compose.yml, which publishes :4440).
+#
+#   GATEWAY_BEARER_TOKEN=... RUNDECK_API_TOKEN=... docker compose up -d
+services:
+  diagnostics-gateway:
+    build: ./gateway
+    container_name: rundeck-diagnostics-gateway
+    ports:
+      - "8710:8710"
+    environment:
+      RUNDECK_URL: http://host.docker.internal:4440
+      RUNDECK_API_TOKEN: ${RUNDECK_API_TOKEN:?set RUNDECK_API_TOKEN}
+      RUNDECK_PROJECT: ${RUNDECK_PROJECT:-diagnostics-demo}
+      GATEWAY_BEARER_TOKEN: ${GATEWAY_BEARER_TOKEN:?set GATEWAY_BEARER_TOKEN}
+      DIAGNOSTIC_TAG: diagnostic
+      RUN_WAIT_SECONDS: "120"
+      LOG_TAIL_LINES: "200"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped

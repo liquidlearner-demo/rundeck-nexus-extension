@@ -1,0 +1,32 @@
+- name: disk-usage
+  group: diagnostics
+  description: >-
+    Report filesystem usage on the local node and flag any mount above a
+    threshold. Useful when errors suggest write failures, database stalls,
+    or log ingestion gaps that could be caused by a full disk. Returns df
+    output and a DIAGNOSTIC SUMMARY listing any mounts over the threshold.
+  tags: 'diagnostic'
+  loglevel: INFO
+  options:
+    - name: threshold_percent
+      description: Usage percentage above which a mount is flagged
+      value: '85'
+      required: false
+  sequence:
+    keepgoing: false
+    strategy: node-first
+    commands:
+      - script: |
+          #!/bin/bash
+          threshold="@option.threshold_percent@"
+          echo "Filesystem usage (threshold: ${threshold}%):"
+          df -hP
+          flagged=$(df -P | awk -v t="$threshold" 'NR>1 { gsub("%","",$5); if ($5+0 > t) printf "%s at %s%%; ", $6, $5 }')
+          echo "=== DIAGNOSTIC SUMMARY ==="
+          if [ -n "$flagged" ]; then
+            echo "result: unhealthy"
+            echo "detail: mounts over ${threshold}%: $flagged"
+          else
+            echo "result: healthy"
+            echo "detail: no mount above ${threshold}%"
+          fi

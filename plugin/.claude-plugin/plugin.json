@@ -1,0 +1,9 @@
+{
+  "name": "rundeck-diagnostics",
+  "version": "0.1.0",
+  "description": "Teaches incident.io Investigations when and how to run diagnostic runbooks in Rundeck via the Rundeck Diagnostics Gateway MCP connector, and how to treat the results as evidence.",
+  "author": {
+    "name": "Chris Bell",
+    "email": "chris.bell@incident.io"
+  }
+}
