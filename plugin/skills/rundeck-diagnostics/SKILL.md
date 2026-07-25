@@ -15,8 +15,9 @@ description: >-
 
 Rundeck holds this organisation's codified diagnostic runbooks. They are
 read-only checks — they inspect system state, never change it — so running
-them is always safe. Access is via the **Rundeck Diagnostics Gateway** MCP
-connector, which only exposes diagnostic jobs.
+them is always safe. Access is via the **Rundeck MCP connector**; the
+diagnostic runbooks live in the `diagnostics-demo` project, group
+`diagnostics`, tagged `diagnostic`.
 
 ## When to reach for this
 
@@ -31,16 +32,21 @@ Prefer native telemetry sources for metrics/log *history*; use Rundeck for
 
 ## How to run a diagnostic
 
-1. **`list_diagnostics()`** — see what's available. Job descriptions state
-   when each check is useful and what it returns. Don't guess job ids.
-2. **Map incident context to options.** Job options use plain names
-   (`service`, `host`, `window_minutes`). Take values from the alert payload,
-   affected catalog entries, or earlier findings. If a required option can't
-   be inferred, say so rather than inventing a value.
-3. **`run_diagnostic(job_id, options)`** — runs the job and returns status,
-   output tail, and a permalink. Most diagnostics finish inside the call.
+1. **`list_jobs(query={project: "diagnostics-demo"})`** — see what's
+   available (use `list_projects()` first if the project is unknown). Job
+   descriptions state when each check is useful and what it returns. Don't
+   guess job ids.
+2. **Map incident context to options.** Check the option schema with
+   **`get_job(job_id)`** — options use plain names (`service`, `target`,
+   `window_minutes`), many with enforced allowed values. Take values from the
+   alert payload, affected catalog entries, or earlier findings. If a required
+   option can't be inferred, say so rather than inventing a value.
+3. **`run_job_and_wait(job_id, request={options: {...}})`** — runs the job,
+   waits for it to finish, and returns the final status, output (including
+   the summary block), and a permalink in one call. Prefer this over
+   `run_job`, which returns before the job completes.
 4. If the result says the job is still **running**, you must call
-   **`get_diagnostic_result(execution_id)`** before drawing any conclusion.
+   **`get_execution_output(execution_id)`** before drawing any conclusion.
    Never cite an in-flight or timed-out run as evidence.
 
 ## Reading the output
