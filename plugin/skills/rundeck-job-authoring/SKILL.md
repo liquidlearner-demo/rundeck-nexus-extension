@@ -28,10 +28,13 @@ decline and suggest a human-owned runbook instead.
 
 ## The workflow
 
-1. **Find a template.** `list_projects()` → `list_jobs(query={project: ...})`
-   (diagnostics live in the `diagnostics-demo` project, group `diagnostics`) →
-   pick the closest existing job → `get_job_definition(job_id)` for its full
-   YAML. Starting from a working job beats writing from scratch.
+1. **Find a template.** Check the **`_Templates` project first** — it holds a
+   library of sample jobs grouped by category (diagnostics, container-management,
+   database-management, storage-management, finops, automation), each marked
+   TEMPLATE with execution disabled. `list_jobs(query={project: "_Templates"})`
+   → pick the closest match → `get_job_definition(job_id)` for its full YAML.
+   Live working examples are in `diagnostics-demo` (group `diagnostics`).
+   Starting from a template beats writing from scratch.
 2. **Draft the variant.** Edit the YAML: new kebab-case `name`, remove the
    `id`/`uuid` fields (so a new job is created), adjust description, options,
    and script to the new check. Follow the conventions below.
