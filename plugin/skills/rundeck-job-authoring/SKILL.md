@@ -33,7 +33,7 @@ decline and suggest a human-owned runbook instead.
    database-management, storage-management, finops, automation), each marked
    TEMPLATE with execution disabled. `list_jobs(query={project: "_Templates"})`
    → pick the closest match → `get_job_definition(job_id)` for its full YAML.
-   Live working examples are in `diagnostics-demo` (group `diagnostics`).
+   Approved live runbooks in the `Diagnostics` project also work as templates.
    Starting from a template beats writing from scratch.
 2. **Draft the variant.** Edit the YAML: new kebab-case `name`, remove the
    `id`/`uuid` fields (so a new job is created), adjust description, options,
@@ -42,10 +42,12 @@ decline and suggest a human-owned runbook instead.
    follow-up with a plain-English summary: what it checks, when to run it,
    what the summary block will say. **Only call `create_job` after a human
    approves — or when the request explicitly asks you to create it.**
-4. **Create.** `create_job(project, job_yaml)`. To *update* an existing job
-   instead, keep its `uuid` and pass `dupe_option="update"`. Note: Rundeck
-   matches duplicates by uuid, not name — uuid-less YAML always creates a new
-   job, so re-importing without a uuid produces same-named duplicates.
+4. **Create.** `create_job(project, job_yaml)` — **target the `Diagnostics`
+   project unless the user names a different one**; that is where approved
+   automation jobs live. To *update* an existing job instead, keep its `uuid`
+   and pass `dupe_option="update"`. Note: Rundeck matches duplicates by uuid,
+   not name — uuid-less YAML always creates a new job, so re-importing without
+   a uuid produces same-named duplicates.
 5. **Verify.** `run_job_and_wait(new_job_id, request={options})` must return
    `succeeded` with a well-formed summary block before you cite the job. If it
    fails, fix the YAML and re-import with the new job's uuid +

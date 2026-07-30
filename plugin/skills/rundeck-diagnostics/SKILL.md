@@ -2,22 +2,36 @@
 name: rundeck-diagnostics
 description: >-
   Run diagnostic runbooks in Rundeck to gather live system state during an
-  investigation. Use whenever the investigation would benefit from evidence
-  that telemetry alone cannot provide — current process/service health on a
-  host, disk or resource pressure, live log tails from the affected service,
-  or connectivity checks. Trigger when a hypothesis needs verifying against
-  the actual system, when telemetry is stale or missing for the affected
-  component, or when an alert names a host/service that has Rundeck
-  diagnostics available.
+  investigation. ALWAYS trigger at the start of a new incident investigation:
+  the first action is running vendor-status-check to rule out an active SaaS
+  vendor outage. Also use whenever the investigation would benefit from
+  evidence that telemetry alone cannot provide — current process/service
+  health on a host, disk or resource pressure, live log tails from the
+  affected service, or connectivity checks — when a hypothesis needs verifying
+  against the actual system, or when an alert names a host/service that has
+  Rundeck diagnostics available. Approved runbooks live in the Diagnostics
+  project (the default); users can point at other projects explicitly.
 ---
 
 # Rundeck diagnostics
 
 Rundeck holds this organisation's codified diagnostic runbooks. They are
 read-only checks — they inspect system state, never change it — so running
-them is always safe. Access is via the **Rundeck MCP connector**; the
-diagnostic runbooks live in the `diagnostics-demo` project, group
-`diagnostics`, tagged `diagnostic`.
+them is always safe. Access is via the **Rundeck MCP connector**.
+
+**Approved runbooks live in the `Diagnostics` project** (group `diagnostics`,
+tagged `diagnostic`). Default to it for every lookup and run; only use another
+project (e.g. `diagnostics-demo`) when the user names one explicitly.
+
+## First move on a new incident
+
+When an investigation starts on a fresh incident, **run `vendor-status-check`
+(in the `Diagnostics` project) before forming hypotheses** — it checks the
+public status of 10 major SaaS vendors in ~5 seconds. An active vendor outage
+reframes the whole investigation; ruling one out is the cheapest evidence you
+can gather. Cite its summary either way ("no active vendor issues" is a
+finding), and re-run it with `vendor=<name>` later if a specific dependency
+comes under suspicion.
 
 ## When to reach for this
 
@@ -32,10 +46,10 @@ Prefer native telemetry sources for metrics/log *history*; use Rundeck for
 
 ## How to run a diagnostic
 
-1. **`list_jobs(query={project: "diagnostics-demo"})`** — see what's
-   available (use `list_projects()` first if the project is unknown). Job
-   descriptions state when each check is useful and what it returns. Don't
-   guess job ids.
+1. **`list_jobs(query={project: "Diagnostics"})`** — see what's available
+   (only look elsewhere if the user named a different project; `list_projects()`
+   shows what exists). Job descriptions state when each check is useful and
+   what it returns. Don't guess job ids.
 2. **Map incident context to options.** Check the option schema with
    **`get_job(job_id)`** — options use plain names (`service`, `target`,
    `window_minutes`), many with enforced allowed values. Take values from the
