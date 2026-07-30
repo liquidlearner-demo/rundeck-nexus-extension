@@ -19,6 +19,10 @@ Rundeck holds this organisation's codified diagnostic runbooks. They are
 read-only checks — they inspect system state, never change it — so running
 them is always safe. Access is via the **Rundeck MCP connector**.
 
+More than one automation backend may be connected (e.g. Rundeck and AWX) —
+they expose the same tools and the same workflow below applies to each; pick
+the backend whose connector/project holds the runbook you need.
+
 **Approved runbooks live in the `Diagnostics` project** (group `diagnostics`,
 tagged `diagnostic`). Default to it for every lookup and run; only use another
 project (e.g. `diagnostics-demo`) when the user names one explicitly.

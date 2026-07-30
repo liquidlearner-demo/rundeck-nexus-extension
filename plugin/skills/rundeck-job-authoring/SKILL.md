@@ -11,6 +11,11 @@ description: >-
 
 # Rundeck job authoring
 
+More than one automation backend may be connected (e.g. Rundeck and AWX);
+they expose the same tools and this workflow applies to each. One backend
+difference: on AWX, create_job wires a template around a playbook that must
+already exist in the project's git repo — new playbooks arrive via git.
+
 Rundeck holds this organisation's codified diagnostic runbooks. During a PIR,
 the most valuable follow-up is often "make the check we did by hand into a
 runbook" — so the next investigation gets it in one call. This skill covers

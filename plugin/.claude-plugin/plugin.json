@@ -1,6 +1,6 @@
 {
   "name": "rundeck-diagnostics",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Teaches incident.io Investigations when and how to run diagnostic runbooks in Rundeck via the Rundeck MCP connector and treat the results as evidence — and how to author new runbooks during PIRs (propose, create on approval, verify).",
   "author": {
     "name": "Chris Bell",
